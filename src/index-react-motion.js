@@ -1,8 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-// import { TransitionMotion, spring, presets } from 'react-motion';
-import { UnmountClosed as Collapse } from 'react-collapse';
-import { presets } from 'react-motion';
+import { TransitionMotion, spring, presets } from 'react-motion';
 
 import './css/style.css';
 
@@ -42,13 +40,14 @@ class App extends React.Component {
   };
 
   handleAddTodo = () => {
+    // console.log('handleAddTodo');
     const task = this.state.inputValue.trim();
     if (task === '') return;
+    // create todo
     const newItem = {
       key: 't' + Date.now(),
       data: { text: this.state.inputValue, isDone: false },
     };
-
     //append at the start of array
     this.setState({ todoList: [newItem].concat(this.state.todoList), inputValue: '' });
     this.inputRef.current.focus();
@@ -65,6 +64,7 @@ class App extends React.Component {
   };
 
   handleRemoveTodo = removeKey => {
+    // console.log('handleRemoveTodo');
     const todoList = this.state.todoList.filter(todo => todo.key !== removeKey);
     this.setState({ todoList });
   };
@@ -84,11 +84,68 @@ class App extends React.Component {
     }));
   };
 
+  getStyles = () => {
+    const { todoList, inputValue } = this.state;
+    return todoList
+      .filter(todo => {
+        if (
+          (inputValue.trim().length &&
+            todo.data.text.toUpperCase().includes(inputValue.toUpperCase())) ||
+          !inputValue.trim().length
+        ) {
+          return todo;
+        }
+      })
+      .map((todo) => {
+        return {
+          ...todo,
+          style: {
+            height: spring(60, presets.gentle),
+            opacity: spring(1, presets.gentle),
+          },
+        };
+      });
+  };
+
+  willEnter() {
+    return {
+      height: 0,
+      opacity: 1,
+    };
+  }
+
+  willLeave() {
+    return {
+      height: spring(0),
+      opacity: spring(0),
+    };
+  }
+
   /* Animations End */
 
   render() {
     const { todoList, inputValue } = this.state;
     const itemsLeft = todoList.filter(({ data: { isDone } }) => !isDone).length;
+    const filteredListItems = todoList
+      .filter(todo => {
+        if (
+          (inputValue.trim().length &&
+            todo.data.text.toUpperCase().includes(inputValue.toUpperCase())) ||
+          !inputValue.trim().length
+        ) {
+          return todo;
+        }
+      })
+      .map((todo, i) => (
+          <TodoItem
+            key={todo.key}
+            keyIdx={todo.key}
+            {...todo}
+            handleRemoveTodo={this.handleRemoveTodo}
+            handleToggleTask={this.handleToggleTask}
+          />
+        )
+      );
 
     return (
       <div className="App">
@@ -111,35 +168,28 @@ class App extends React.Component {
             />
           </Row>
           <Row>
-            <TodoItemsWrapper>
-              {
-                this.state.todoList.map(todo => {
-                  const todoItem = <TodoItem
-                                      key={todo.key}
-                                      keyIdx={todo.key}
-                                      text={todo.data.text}
-                                      isDone={todo.data.isDone}
-                                      handleRemoveTodo={this.handleRemoveTodo}
-                                      handleToggleTask={this.handleToggleTask}
-                                    />
-
-                  const todoItemWithAnimation = (inputValue.trim().length &&
-                      todo.data.text.toUpperCase().includes(inputValue.toUpperCase())) ||
-                    !inputValue.trim().length
-                   ?
-                    <Collapse isOpened={true} springConfig={presets.wobbly}>
-                      {todoItem}
-                    </Collapse>
-                    :
-                    <Collapse isOpened={false} springConfig={presets.wobbly}>
-                      {todoItem}
-                    </Collapse>
-
-                  return todoItemWithAnimation;
-                })
-              }
-
-            </TodoItemsWrapper>
+            <TransitionMotion
+            defaultStyles={this.getDefaultStyles()}
+            styles={this.getStyles()}
+            willLeave={this.willLeave}
+            willEnter={this.willEnter}
+            >
+            {styles =>
+              <TodoItemsWrapper>
+                {styles.map(({key, style, data: {text, isDone}}) =>
+                  <TodoItem
+                    springStyles={style}
+                    key={key}
+                    keyIdx={key}
+                    text={text}
+                    isDone={isDone}
+                    handleRemoveTodo={this.handleRemoveTodo}
+                    handleToggleTask={this.handleToggleTask}
+                  />
+                )}
+              </TodoItemsWrapper>
+            }
+            </TransitionMotion>
           </Row>
         </Container>
       </div>
