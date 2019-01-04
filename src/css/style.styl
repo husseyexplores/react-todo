@@ -16,6 +16,10 @@ html {
   font-size: 62.5%;
 }
 
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
 .container{
   max-width: 50rem;
   margin: 8rem auto;
@@ -36,6 +40,7 @@ html {
   border-bottom: 2px solid var(--accent); // darkest-blue
 
   h1 {
+    font-family: 'Nunito', sans-serif;
     color: var(--heading-color);
     font-size: 2.5rem;
   }
@@ -132,7 +137,7 @@ label {
   .todo__item-wrapper {
     display: flex;
     align-items: center;
-    // padding: 1.5rem 0;
+    padding: 1.5rem 0;
    // transition: all .2s .2s;
 
     .checkbox-wrapper {
@@ -187,6 +192,7 @@ label {
       font-size: 1.7rem;
       position: relative;
       user-select: none;
+      word-break: break-word;
 
       &::before {
 
